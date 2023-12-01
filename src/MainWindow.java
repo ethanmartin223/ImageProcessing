@@ -1,46 +1,62 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class MainWindow extends JFrame {
-    public static void main(String[] args) {
-        System.setProperty("sun.java2d.opengl", "true");
-
+    public static void main(String[] args) throws IOException {
+        //System.setProperty("sun.java2d.opengl", "true");
         //new MainWindow();
 
-        BufferedImage image = null;
+        HashSet<Integer> palette = new HashSet<>();
 
-        // READ IMAGE
-        try {
-            File input_file = new File("C:/Users/hp/Desktop/Image Processing in Java/gfg-logo.png");
+        HashMap<Integer, Integer> north = new HashMap<>();
+        HashMap<Integer, Integer> east = new HashMap<>();
+        HashMap<Integer, Integer> south = new HashMap<>();
+        HashMap<Integer, Integer> west = new HashMap<>();
 
-            image = new BufferedImage(
-                    width, height, BufferedImage.TYPE_INT_ARGB);
+        HashMap[] directions = new HashMap[] {north, east, south, west};
 
-            // Reading input file
-            image = ImageIO.read(input_file);
 
-            System.out.println("Reading complete.");
+        String imagePath = "src/in.png";
+        BufferedImage image = ImageIO.read(new File(imagePath));
+
+
+        System.out.println(image);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int color = image.getRGB(x,y);
+                palette.add(color);
+                if (y-1>-1) north.put(color,image.getRGB(x,y-1));
+                if (y+1<image.getHeight()) south.put(color,image.getRGB(x,y+1));
+                if (x+1<image.getWidth()) east.put(color,image.getRGB(x+1,y));
+                if (x-1>-1) west.put(color,image.getRGB(x-1,y));
+            }
         }
-        catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
 
-        // WRITE IMAGE
-        try {
-            // Output file path
-            File output_file = new File(
-                    "C:/Users/hp/Desktop/Image Processing in Java/gfg.png");
+        System.out.println(palette);
+        System.out.println(north);
+        System.out.println(east);
+        System.out.println(south);
+        System.out.println(west);
 
-            // Writing to file taking type and path as
-            ImageIO.write(image, "png", output_file);
+        // reWrite image
+        File output_file = new File("out2.png");
+        BufferedImage output_image = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
-            System.out.println("Writing complete.");
+        ArrayList<Integer> paletteArray = new ArrayList<>(palette);
+
+        for (int y = 0; y < output_image.getHeight(); y++) {
+            for (int x = 0; x < output_image.getWidth(); x++) {
+                output_image.setRGB(x,y, paletteArray.get((int) (Math.random()*palette.size())));
+            }
         }
-        catch (IOException e) {
-            System.out.println("Error: " + e);
-        }
+        ImageIO.write(output_image, "png", output_file);
     }
 
     public MainWindow() {
